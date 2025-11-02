@@ -82,6 +82,8 @@ export default function Tickets() {
   const [top10EarliestIds, setTop10EarliestIds] = useState<Set<string>>(
     new Set()
   );
+  const [checkInMorning, setCheckInMorning] = useState<number>(0);
+  const [checkInAfternoon, setCheckInAfternoon] = useState<number>(0);
 
   const getCreatedTime = (ticket: any) => {
     const raw =
@@ -118,12 +120,30 @@ export default function Tickets() {
   };
 
   const render = (data: TicketData) => {
+    console.log("data", data);
     const morningData = data.pending.tickets.filter(
       (t: any) => t?.schedule === "show-morning"
     );
     const afternoonData = data.pending.tickets.filter(
       (t: any) => t?.schedule === "show-afternoon"
     );
+
+    const morningDataApproved = data.approved.tickets.filter(
+      (t: any) => t?.schedule === "show-morning"
+    );
+    const afternoonDataApproved = data.approved.tickets.filter(
+      (t: any) => t?.schedule === "show-afternoon"
+    );
+
+    const checkInMorning = morningDataApproved.filter(
+      (t: any) => t?.isChecked
+    ).length;
+    const checkInAfternoon = afternoonDataApproved.filter(
+      (t: any) => t?.isChecked
+    ).length;
+
+    setCheckInMorning(checkInMorning);
+    setCheckInAfternoon(checkInAfternoon);
     setMorningData(morningData);
     setAfternoonData(afternoonData);
 
@@ -253,14 +273,10 @@ export default function Tickets() {
   }, [originalData?.approved?.tickets]);
 
   const handleCheckTicket = async (id: string, isChecked: boolean) => {
-    console.log("id", id);
-    console.log("isChecked", isChecked);
-
     const response = await TicketService.updateTicket(id, {
       isChecked: isChecked,
     });
 
-    console.log("response", response);
     if (response) {
       toast({
         title: "Cập nhật thành công!",
@@ -378,104 +394,125 @@ export default function Tickets() {
                 </div>
               </div>
             </div>
-            <div className="flex flex-col lg:flex-row justify-start items-start gap-6 w-full mt-5">
+            <div className="flex flex-col lg:flex-row justify-between items-start gap-6 w-full mt-5">
               <div className="flex flex-row justify-start items-start gap-6">
-                <div className="flex flex-row items-center">
-                  <div className="cursor-pointer px-4 py-1 rounded-lg bg-yellow-50 border border-yellow-200 h-24">
-                    ĐANG CHỜ:{" "}
-                    <span className="text-lg text-black font-bold italic">
-                      {" "}
-                      {ticketData.pending.total_quantity} vé
-                    </span>
-                    <div>
-                      <div className="text-lg text-black flex flex-row items-center gap-2">
-                        Suất sáng:{" "}
-                        {ticketData.pending.total_quantity_pending_show_morning}{" "}
-                        vé
+                <div className="flex flex-row justify-start items-start gap-6">
+                  <div className="flex flex-row items-center">
+                    <div className="cursor-pointer px-4 py-1 rounded-lg bg-yellow-50 border border-yellow-200 h-24">
+                      ĐANG CHỜ:{" "}
+                      <span className="text-lg text-black font-bold italic">
+                        {" "}
+                        {ticketData.pending.total_quantity} vé
+                      </span>
+                      <div>
+                        <div className="text-lg text-black flex flex-row items-center gap-2">
+                          Suất sáng:{" "}
+                          {
+                            ticketData.pending
+                              .total_quantity_pending_show_morning
+                          }{" "}
+                          vé
+                        </div>
+                        <div className="text-lg text-black flex flex-row items-center gap-2">
+                          Suất tối:{" "}
+                          {
+                            ticketData.pending
+                              .total_quantity_pending_show_afternoon
+                          }{" "}
+                          vé
+                        </div>
                       </div>
-                      <div className="text-lg text-black flex flex-row items-center gap-2">
-                        Suất tối:{" "}
-                        {
-                          ticketData.pending
-                            .total_quantity_pending_show_afternoon
-                        }{" "}
-                        vé
+                    </div>
+                  </div>
+                  <div className="flex flex-row items-center">
+                    <div className="cursor-pointer px-4 py-1 rounded-lg bg-green-50 border border-green-200 h-24">
+                      XÁC NHẬN:{" "}
+                      <span className="text-lg text-black font-bold italic">
+                        {ticketData.approved.total_quantity} vé
+                      </span>
+                      <div>
+                        <div className="text-lg text-black flex flex-row items-center gap-2">
+                          Suất sáng:{" "}
+                          {
+                            ticketData.approved
+                              .total_quantity_approved_show_morning
+                          }{" "}
+                          vé
+                        </div>
+                        <div className="text-lg text-black flex flex-row items-center gap-2">
+                          Suất tối:{" "}
+                          {
+                            ticketData.approved
+                              .total_quantity_approved_show_afternoon
+                          }{" "}
+                          vé
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-row items-center">
-                  <div className="cursor-pointer px-4 py-1 rounded-lg bg-green-50 border border-green-200 h-24">
-                    XÁC NHẬN:{" "}
-                    <span className="text-lg text-black font-bold italic">
-                      {ticketData.approved.total_quantity} vé
-                    </span>
-                    <div>
-                      <div className="text-lg text-black flex flex-row items-center gap-2">
-                        Suất sáng:{" "}
-                        {
-                          ticketData.approved
-                            .total_quantity_approved_show_morning
-                        }{" "}
-                        vé
+                <div className="flex flex-row justify-start items-start gap-6">
+                  <div className="flex flex-row items-center">
+                    <div className="cursor-pointer px-4 py-1 rounded-lg bg-blue-50 border border-blue-200 h-24">
+                      CÒN LẠI:{" "}
+                      <div>
+                        <div className="text-lg text-black flex flex-row items-center gap-2">
+                          Suất sáng:{" "}
+                          {AMOUNT_MORNING_TICKETS -
+                            (ticketData.approved
+                              .total_quantity_approved_show_morning +
+                              ticketData.pending
+                                .total_quantity_pending_show_morning)}{" "}
+                          vé
+                        </div>
+                        <div className="text-lg text-black flex flex-row items-center gap-2">
+                          Suất tối:{" "}
+                          <span
+                            className={`font-bold ${
+                              AMOUNT_AFTERNOON_TICKETS -
+                                (ticketData.approved
+                                  .total_quantity_approved_show_afternoon +
+                                  ticketData.pending
+                                    .total_quantity_pending_show_afternoon) >
+                              0
+                                ? "text-green-500"
+                                : "text-red-500"
+                            }`}
+                          >
+                            {AMOUNT_AFTERNOON_TICKETS -
+                              (ticketData.approved
+                                .total_quantity_approved_show_afternoon +
+                                ticketData.pending
+                                  .total_quantity_pending_show_afternoon)}{" "}
+                            vé
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-lg text-black flex flex-row items-center gap-2">
-                        Suất tối:{" "}
-                        {
-                          ticketData.approved
-                            .total_quantity_approved_show_afternoon
-                        }{" "}
-                        vé
-                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-row items-center">
+                    <div className="cursor-pointer px-4 py-1 rounded-lg bg-red-50 border border-red-200">
+                      TỪ CHỐI:{" "}
+                      <strong className="text-lg text-red-600">
+                        {ticketData.rejected.total_quantity} vé
+                      </strong>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="flex flex-row justify-start items-start gap-6">
+              <div></div>
+              <div className="flex flex-row items-center">
                 <div className="flex flex-row items-center">
-                  <div className="cursor-pointer px-4 py-1 rounded-lg bg-blue-50 border border-blue-200 h-24">
-                    CÒN LẠI:{" "}
+                  <div className="cursor-pointer px-4 py-1 rounded-lg bg-orange-100 border border-orange-300 h-24">
+                    CHECK IN:{" "}
                     <div>
                       <div className="text-lg text-black flex flex-row items-center gap-2">
-                        Suất sáng:{" "}
-                        {AMOUNT_MORNING_TICKETS -
-                          (ticketData.approved
-                            .total_quantity_approved_show_morning +
-                            ticketData.pending
-                              .total_quantity_pending_show_morning)}{" "}
-                        vé
+                        Suất sáng: {checkInMorning} vé
                       </div>
                       <div className="text-lg text-black flex flex-row items-center gap-2">
-                        Suất tối:{" "}
-                        <span
-                          className={`font-bold ${
-                            AMOUNT_AFTERNOON_TICKETS -
-                              (ticketData.approved
-                                .total_quantity_approved_show_afternoon +
-                                ticketData.pending
-                                  .total_quantity_pending_show_afternoon) >
-                            0
-                              ? "text-green-500"
-                              : "text-red-500"
-                          }`}
-                        >
-                          {AMOUNT_AFTERNOON_TICKETS -
-                            (ticketData.approved
-                              .total_quantity_approved_show_afternoon +
-                              ticketData.pending
-                                .total_quantity_pending_show_afternoon)}{" "}
-                          vé
-                        </span>
+                        Suất tối: {checkInAfternoon} vé
                       </div>
                     </div>
-                  </div>
-                </div>
-                <div className="flex flex-row items-center">
-                  <div className="cursor-pointer px-4 py-1 rounded-lg bg-red-50 border border-red-200">
-                    TỪ CHỐI:{" "}
-                    <strong className="text-lg text-red-600">
-                      {ticketData.rejected.total_quantity} vé
-                    </strong>
                   </div>
                 </div>
               </div>
