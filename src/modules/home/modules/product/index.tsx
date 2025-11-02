@@ -8,6 +8,9 @@ import { useEffect, useState } from "react";
 import { TicketService } from "@/services/product";
 import { Loader } from "lucide-react";
 import { HELPER } from "@/utils/helper";
+import Cookies from "js-cookie";
+import "@/styles/styles.css";
+import { toast } from "@/hooks/use-toast";
 
 type TicketData = {
   pending: {
@@ -29,6 +32,8 @@ type TicketData = {
 };
 
 export default function Tickets() {
+  const isLogin = Cookies.get("isLogin");
+
   const AMOUNT_MORNING_TICKETS = 30;
   const AMOUNT_AFTERNOON_TICKETS = 41;
 
@@ -62,6 +67,7 @@ export default function Tickets() {
     },
     rejected: { tickets: [], total_quantity: 0 },
   });
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [currenData, setCurrenData] = useState<any>([] as any);
   const [morningData, setMorningData] = useState<any>([] as any);
@@ -69,7 +75,7 @@ export default function Tickets() {
   const [searchId, setSearchId] = useState<string>("");
   const [activeTab, setActiveTab] = useState<
     "pending" | "approved" | "rejected"
-  >("pending");
+  >("approved");
   const [scheduleFilter, setScheduleFilter] = useState<
     "all" | "show-morning" | "show-afternoon"
   >("all");
@@ -246,6 +252,25 @@ export default function Tickets() {
     setTop10EarliestIds(ids);
   }, [originalData?.approved?.tickets]);
 
+  const handleCheckTicket = async (id: string, isChecked: boolean) => {
+    console.log("id", id);
+    console.log("isChecked", isChecked);
+
+    const response = await TicketService.updateTicket(id, {
+      isChecked: isChecked,
+    });
+
+    console.log("response", response);
+    if (response) {
+      toast({
+        title: "Cập nhật thành công!",
+        description: "Thông tin vé đã được cập nhật.",
+      });
+      // Refresh the data after successful update
+      await init();
+    }
+  };
+
   return (
     <section className="p-4">
       <div className="relative overflow-hidden">
@@ -279,16 +304,18 @@ export default function Tickets() {
           <div className="flex flex-col mt-5">
             <div className="flex flex-row justify-between items-center">
               <div className="flex flex-row justify-start items-center gap-6">
-                <div
-                  className={`cursor-pointer border px-2 py-1 rounded-lg w-36 text-center ${
-                    activeTab === "pending"
-                      ? "border-indigo-600 bg-indigo-600 text-white"
-                      : "border-gray-300 hover:bg-gray-50"
-                  }`}
-                  onClick={() => switchTab("pending")}
-                >
-                  ĐANG CHỜ ({ticketData.pending.tickets.length})
-                </div>
+                {isLogin === "admin" && (
+                  <div
+                    className={`cursor-pointer border px-2 py-1 rounded-lg w-36 text-center ${
+                      activeTab === "pending"
+                        ? "border-indigo-600 bg-indigo-600 text-white"
+                        : "border-gray-300 hover:bg-gray-50"
+                    }`}
+                    onClick={() => switchTab("pending")}
+                  >
+                    ĐANG CHỜ ({ticketData.pending.tickets.length})
+                  </div>
+                )}
                 <div
                   className={`cursor-pointer border px-2 py-1 rounded-lg w-36 text-center ${
                     activeTab === "approved"
@@ -299,16 +326,18 @@ export default function Tickets() {
                 >
                   XÁC NHẬN ({ticketData.approved.tickets.length})
                 </div>
-                <div
-                  className={`cursor-pointer border px-2 py-1 rounded-lg w-36 text-center ${
-                    activeTab === "rejected"
-                      ? "border-indigo-600 bg-indigo-600 text-white"
-                      : "border-gray-300 hover:bg-gray-50"
-                  }`}
-                  onClick={() => switchTab("rejected")}
-                >
-                  TỪ CHỐI ({ticketData.rejected.tickets.length})
-                </div>
+                {isLogin === "admin" && (
+                  <div
+                    className={`cursor-pointer border px-2 py-1 rounded-lg w-36 text-center ${
+                      activeTab === "rejected"
+                        ? "border-indigo-600 bg-indigo-600 text-white"
+                        : "border-gray-300 hover:bg-gray-50"
+                    }`}
+                    onClick={() => switchTab("rejected")}
+                  >
+                    TỪ CHỐI ({ticketData.rejected.tickets.length})
+                  </div>
+                )}
               </div>
               <div className="flex flex-row justify-start items-center gap-2">
                 <div
@@ -497,6 +526,9 @@ export default function Tickets() {
                           </th>
                         )}
                         <th scope="col" className="w-24 px-4 py-3 text-center">
+                          Check vé
+                        </th>
+                        <th scope="col" className="w-24 px-4 py-3 text-center">
                           Chi tiết
                         </th>
                       </tr>
@@ -578,6 +610,21 @@ export default function Tickets() {
                                 )}
                               </td>
                             )}
+                            <td className="w-24 text-[14px] px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                              <label className="switch">
+                                <input
+                                  type="checkbox"
+                                  checked={item?.isChecked}
+                                  onChange={() =>
+                                    handleCheckTicket(
+                                      item?._id,
+                                      !item?.isChecked
+                                    )
+                                  }
+                                />
+                                <span className="slider"></span>
+                              </label>
+                            </td>
                             <td className="w-24 text-[14px] px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                               <ModalUpdateTicket data={item} />
                             </td>

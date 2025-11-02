@@ -18,6 +18,7 @@ import { TicketService } from "@/services/product";
 import { Loader, SquarePen } from "lucide-react";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
+import "@/styles/styles.css";
 
 export function ModalUpdateTicket({ data }: { data: any }) {
   const isLogin = Cookies.get("isLogin");
@@ -32,6 +33,7 @@ export function ModalUpdateTicket({ data }: { data: any }) {
   const [quantity, setQuantity] = useState<number>(0);
   const [status, setStatus] = useState<string>("");
   const [rejectedReason, setRejectedReason] = useState<string>("");
+  const [isChecked, setIsChecked] = useState<boolean>(false);
 
   const validateForm = () => {
     if (!name.trim()) {
@@ -106,6 +108,7 @@ export function ModalUpdateTicket({ data }: { data: any }) {
       quantity: 1,
       status: status,
       rejected_reason: status === "rejected" ? rejectedReason : "",
+      isChecked: isChecked,
     };
 
     let response;
@@ -149,6 +152,7 @@ export function ModalUpdateTicket({ data }: { data: any }) {
       setQuantity(data?.quantity || 0);
       setStatus(data?.status || "");
       setRejectedReason(data?.rejected_reason || "");
+      setIsChecked(data?.isChecked || false);
     }
   };
 
@@ -187,7 +191,58 @@ export function ModalUpdateTicket({ data }: { data: any }) {
         <div className="w-full grid grid-cols-1 gap-8">
           <div className="col-span-1">
             <div className="flex flex-col justify-start items-start gap-2 overflow-y-auto hide-scrollbar max-h-[70vh] pr-0 scroll-bar-style">
-              <Label htmlFor="description" className="text-[14.5px]">
+              {/* <Label htmlFor="description" className="text-[14.5px]">
+                Check vé
+              </Label>
+              <div className="neo-toggle-container">
+                <input
+                  className="neo-toggle-input"
+                  id="neo-toggle"
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={(e) => setIsChecked(e.target.checked)}
+                />
+                <label className="neo-toggle" htmlFor="neo-toggle">
+                  <div className="neo-track">
+                    <div className="neo-background-layer"></div>
+                    <div className="neo-grid-layer"></div>
+                    <div className="neo-spectrum-analyzer">
+                      <div className="neo-spectrum-bar"></div>
+                      <div className="neo-spectrum-bar"></div>
+                      <div className="neo-spectrum-bar"></div>
+                      <div className="neo-spectrum-bar"></div>
+                      <div className="neo-spectrum-bar"></div>
+                    </div>
+                    <div className="neo-track-highlight"></div>
+                  </div>
+
+                  <div className="neo-thumb">
+                    <div className="neo-thumb-ring"></div>
+                    <div className="neo-thumb-core">
+                      <div className="neo-thumb-icon">
+                        <div className="neo-thumb-wave"></div>
+                        <div className="neo-thumb-pulse"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="neo-gesture-area"></div>
+
+                  <div className="neo-interaction-feedback">
+                    <div className="neo-ripple"></div>
+                    <div className="neo-progress-arc"></div>
+                  </div>
+
+                  <div className="neo-status">
+                    <div className="neo-status-indicator">
+                      <div className="neo-status-dot"></div>
+                      <div className="neo-status-text"></div>
+                    </div>
+                  </div>
+                </label>
+              </div> */}
+
+              <Label htmlFor="description" className="text-[14.5px] mt-5">
                 Họ và tên
               </Label>
               <div className="w-full grid items-center gap-4">
