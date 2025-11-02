@@ -30,7 +30,7 @@ type TicketData = {
 
 export default function Tickets() {
   const AMOUNT_MORNING_TICKETS = 30;
-  const AMOUNT_AFTERNOON_TICKETS = 31;
+  const AMOUNT_AFTERNOON_TICKETS = 41;
 
   const [ticketData, setTicketData] = useState<TicketData>({
     pending: {
