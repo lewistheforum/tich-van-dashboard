@@ -35,7 +35,7 @@ export default function Tickets() {
   const isLogin = Cookies.get("isLogin");
 
   const AMOUNT_MORNING_TICKETS = 30;
-  const AMOUNT_AFTERNOON_TICKETS = 41;
+  const AMOUNT_AFTERNOON_TICKETS = 43;
 
   const [ticketData, setTicketData] = useState<TicketData>({
     pending: {
@@ -498,6 +498,29 @@ export default function Tickets() {
                       </strong>
                     </div>
                   </div>
+                  <div className="flex flex-col gap-3 items-center">
+                    <div className="cursor-pointer px-4 py-1 rounded-lg bg-blue-50 border border-blue-200">
+                      TỔNG THU:{" "}
+                      <strong className="text-lg text-blue-600">
+                        {HELPER.formatVND(
+                          (
+                            ticketData.approved.total_quantity * 69000
+                          ).toString()
+                        )}{" "}
+                      </strong>
+                    </div>
+                    <div className="cursor-pointer px-4 py-1 rounded-lg bg-blue-50 border border-blue-200">
+                      THỰC THU:{" "}
+                      <strong className="text-lg text-blue-600">
+                        {HELPER.formatVND(
+                          (
+                            checkInMorning * 69000 +
+                            checkInAfternoon * 69000
+                          ).toString()
+                        )}{" "}
+                      </strong>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div></div>
@@ -564,6 +587,9 @@ export default function Tickets() {
                         )}
                         <th scope="col" className="w-24 px-4 py-3 text-center">
                           Check vé
+                        </th>
+                        <th scope="col" className="w-24 px-4 py-3 text-center">
+                          Giá vé
                         </th>
                         <th scope="col" className="w-24 px-4 py-3 text-center">
                           Chi tiết
@@ -661,6 +687,9 @@ export default function Tickets() {
                                 />
                                 <span className="slider"></span>
                               </label>
+                            </td>
+                            <td className="w-24 text-[14px] px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                              69.000 VNĐ
                             </td>
                             <td className="w-24 text-[14px] px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                               <ModalUpdateTicket data={item} />
