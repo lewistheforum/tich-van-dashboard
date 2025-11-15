@@ -191,6 +191,80 @@ export default function Tickets() {
     searchCustomerById(value);
   };
 
+  const getReadableSchedule = (ticket: any) => {
+    if (ticket?.schedule === "show-morning") return "Sáng (9:30 - 11h00)";
+    if (ticket?.schedule === "show-afternoon") return "Tối (18:30 - 20h00)";
+    return "";
+  };
+
+  const getCreatedAtReadable = (ticket: any) => {
+    const raw =
+      ticket?.createdAt ||
+      ticket?.created_at ||
+      ticket?.createdDate ||
+      ticket?.created ||
+      ticket?.updatedAt ||
+      ticket?.updated_at;
+    if (!raw) return "";
+    return HELPER.formatDateTime(raw);
+  };
+
+  const toCsvValue = (value: any) => {
+    if (value === null || value === undefined) return "";
+    const str = String(value).normalize("NFC");
+    if (str.includes('"') || str.includes(",") || str.includes("\n")) {
+      return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+  };
+
+  const buildCsvContent = (header: string[], rows: any[]) => {
+    const lines = [header, ...rows].map((r) => r.map(toCsvValue).join(","));
+    // Add separator directive so Excel splits into columns using comma
+    const sep = "sep=,\n";
+    return sep + lines.join("\n");
+  };
+
+  const stringToUTF16LEBytes = (text: string) => {
+    const normalized = text.normalize("NFC");
+    const buf = new Uint8Array(normalized.length * 2);
+    for (let i = 0; i < normalized.length; i++) {
+      const code = normalized.charCodeAt(i);
+      buf[i * 2] = code & 0xff; // low byte
+      buf[i * 2 + 1] = code >> 8; // high byte
+    }
+    return buf;
+  };
+
+  const exportAllToExcel = () => {
+    // Export ALL data in the current tab; fallback to current tickets if original is empty
+    const sourceOriginal = originalData?.[activeTab]?.tickets || [];
+    const sourceCurrent = ticketData?.[activeTab]?.tickets || [];
+    const source = sourceOriginal.length > 0 ? sourceOriginal : sourceCurrent;
+    // Build JSON with only requested fields
+    const data = source.map((t: any, idx: number) => ({
+      STT: idx + 1,
+      "Họ và Tên": t?.name || "",
+      Email: t?.email || "",
+      "Suất chiếu": getReadableSchedule(t) || "",
+      "Số lượng": t?.quantity ?? "",
+    }));
+
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: "application/json;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tickets_export_${new Date()
+      .toISOString()
+      .slice(0, 19)
+      .replace(/[:T]/g, "-")}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   // Helper function to get total statistics
   const getTotalStats = () => {
     const totalTickets =
@@ -311,9 +385,14 @@ export default function Tickets() {
                 className="h-[40px] w-full focus:outline-none focus:ring-0 border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600"
               />
             </div>
-            <div className="flex flex-col flex-shrink-0 space-y-3 md:flex-row md:items-center lg:justify-end md:space-y-0 md:space-x-3">
-              {/* <ModalCreateTicket /> */}
-            </div>
+            {/* <div className="flex flex-col flex-shrink-0 space-y-3 md:flex-row md:items-center lg:justify-end md:space-y-0 md:space-x-3">
+              <button
+                onClick={exportAllToExcel}
+                className="h-[40px] px-4 rounded-md bg-emerald-600 text-white text-sm hover:bg-emerald-700"
+              >
+                Xuất Excel
+              </button>
+            </div> */}
           </div>
         </div>
         <div className="h-full lg:h-[640px] flex flex-col justify-start gap-5">
@@ -498,7 +577,7 @@ export default function Tickets() {
                       </strong>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-3 items-center">
+                  {/* <div className="flex flex-col gap-3 items-center">
                     <div className="cursor-pointer px-4 py-1 rounded-lg bg-blue-50 border border-blue-200">
                       TỔNG THU:{" "}
                       <strong className="text-lg text-blue-600">
@@ -520,7 +599,7 @@ export default function Tickets() {
                         )}{" "}
                       </strong>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
               <div></div>
